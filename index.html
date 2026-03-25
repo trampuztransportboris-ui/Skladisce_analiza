@@ -324,16 +324,21 @@ function parseReg(v) {
   let s = String(v||'').trim();
   if (isRegNull(s)) return null;
 
-  const hasSuffix = /#\d+\/\d+$/.test(s);
-  const hasPrefix = /^#?\d+[\/\-]\d+\s+\S/.test(s);
+  // PREFIX: #X/Y ali X/Y (1-2 cifri) na začetku, ločen s presledkom ali '-'
+  const hasPrefix = /^#\d{1,2}[\/\-]\d{1,2}[\s\-]+\S/.test(s) ||
+                    /^\d{1,2}[\/\-]\d{1,2}[\s\-]+\S/.test(s);
 
-  // Odstrani suffix #X/Y z konca
-  if (hasSuffix) s = s.replace(/#\d+\/\d+$/, '').trim();
-  // Odstrani prefix #X/Y z začetka
-  if (hasPrefix) s = s.replace(/^#?\d+[\/\-]\d+\s+/, '').trim();
-  // Počisti morebitne vodilne # ali presledke
-  s = s.replace(/^#\d+\s+/, '').trim();
-  s = s.replace(/\s*-\s*/g, '-').replace(/\s*\/\s*/g, '/').replace(/\s+/g, ' ').replace(/^[#\s]+|[#\s]+$/g, '');
+  // SUFFIX: #X/Y na koncu z opcijskim -T/-L/-DRUGI ipd., samo če pred # vsaj 3 znaki
+  const hasSuffix = /\w{3,}.*#\d+\/\d+[-\w]*$/.test(s);
+
+  if (hasPrefix) {
+    s = s.replace(/^#?\d{1,2}[\/\-]\d{1,2}[\s\-]+/, '').trim();
+    s = s.replace(/^#\d+[\s\-]+/, '').trim();
+  } else if (hasSuffix) {
+    s = s.replace(/#\d+\/\d+[-\w]*$/, '').trim().replace(/-+$/, '');
+  }
+
+  s = s.replace(/\s*-\s*/g, '-').replace(/\s*\/\s*/g, '/').replace(/\s+/g, ' ').replace(/^[#\/\s\-]+|[#\/\s\-]+$/g, '');
 
   if (!s || s.length < 2) return null;
   return { base: s.toUpperCase(), hasPrefix, hasSuffix };
