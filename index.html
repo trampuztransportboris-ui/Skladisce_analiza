@@ -334,6 +334,8 @@ function parseReg(v) {
   if (hasPrefix) {
     s = s.replace(/^#?\d{1,2}[\/\-]\d{1,2}[\s\-]+/, '').trim();
     s = s.replace(/^#\d+[\s\-]+/, '').trim();
+    // Odstrani oznake duplikatov: -DRUGI, -PRVI, -2, -1 ipd. z konca
+    s = s.replace(/[-](DRUGI|PRVI|SECOND|FIRST|\d+)$/i, '').trim();
   } else if (hasSuffix) {
     s = s.replace(/#\d+\/\d+[-\w]*$/, '').trim().replace(/-+$/, '');
   }
